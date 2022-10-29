@@ -5,9 +5,11 @@ const app = express();
 const port = 8080;
 
 const usersController = require('./controllers/users.controller');
+const routes = require('./routes/index');
 
 app.use(cors()); 
 app.use(express.json());
+app.use(routes);
 
 /*
 Geração de código aleatório:

@@ -16,7 +16,7 @@ module.exports = runQuery = async (query) => {
             connectString: process.env.DB_CONNECT_STRING,
         })
 
-        const result = await connection.execute(query);
+        const result = await connection.execute(query, params);
 
         return result;
     } catch (error) {
