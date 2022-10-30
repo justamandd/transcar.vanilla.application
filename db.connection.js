@@ -5,7 +5,7 @@ oracledb.autoCommit = true;
 
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 
-module.exports = runQuery = async (query) => {
+module.exports = runQuery = async (query, params) => {
     
     let connection;
 

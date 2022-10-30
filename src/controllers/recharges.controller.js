@@ -26,11 +26,16 @@ module.exports = {
 
         try {
             if (ticket !== undefined && type !== undefined) {
-                const recharge = await rechargeServices.recharge(ticket, type, 'waiting');
 
-                response.status = 'success';
-                response.message = 'successful recharge';
-                response.payload = recharge.rows
+                if (typeCredit[type] !== undefined) {
+                    const recharge = await rechargeServices.recharge(ticket, type);
+    
+                    response.status = 'success';
+                    response.message = 'successful recharge';
+                    response.payload = recharge
+                } else {
+                    response.message = 'type not found';
+                }
             }
         } catch (error) {
             response.message = error.message;
@@ -38,6 +43,9 @@ module.exports = {
 
         res.send(response);
     },
+
+
+    //revisar
 
     async verifyLastRecharge(ticket_id) {
         const response = {

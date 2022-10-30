@@ -18,13 +18,17 @@ module.exports = {
             response.message = "successful creation";
             response.payload = ticket;
         } catch (error) {
-            response.message = error.message;
+            response.message = error;
         }
 
         res.send(response);
     },
 
-    async use(){
+    async use(ticket_id){
+        
+    },
+
+    async select(req, res){
 
     },
 
