@@ -13,12 +13,12 @@ module.exports = {
 
         try {
             const ticket = await ticketServices.createCode(code);
-            
+
             response.status = "success";
             response.message = "successful creation";
             response.payload = ticket;
         } catch (error) {
-            response.message = error;
+            response.message = error.message;
         }
 
         res.send(response);

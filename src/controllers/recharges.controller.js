@@ -21,21 +21,27 @@ module.exports = {
             "30d": 1
         }
 
-        const ticket = req.headers.ticket;
-        const type = req.body.type;
+        const { ticket, type } = req.headers;
 
+        
         try {
-            if (ticket !== undefined && type !== undefined) {
+            console.log(ticket, type)
 
-                if (typeCredit[type] !== undefined) {
-                    const recharge = await rechargeServices.recharge(ticket, type);
-    
-                    response.status = 'success';
-                    response.message = 'successful recharge';
-                    response.payload = recharge
-                } else {
-                    response.message = 'type not found';
-                }
+            if (ticket !== undefined && type !== undefined) {
+                    if (typeCredit[type] !== undefined) {
+                        const recharge = await rechargeServices.recharge(ticket, type);
+        
+                        if (recharge !== undefined)
+                        {
+                            response.status = 'success';
+                            response.message = 'successful recharge';
+                            response.payload = recharge
+                        }else {
+                            response.message = 'invalid ticket'
+                        }
+                    } else {
+                        response.message = 'type not found';
+                    }
             }
         } catch (error) {
             response.message = error.message;

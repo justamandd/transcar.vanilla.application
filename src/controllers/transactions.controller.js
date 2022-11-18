@@ -1,6 +1,7 @@
 const transactionsServices = require('../services/transactions.service');
 const rechargeServices = require('../services/recharges.service');
 const ticketServices = require('../services/tickets.service');
+const ticketsControllers = require('./tickets.controllers');
 
 module.exports = {
     //transação está funcionando como o BRASIL, não está kkkkkkkkk
@@ -25,83 +26,119 @@ module.exports = {
             "30d": 43200
         }
 
-        try {
-            if (ticket !== undefined && place !== undefined && method !== undefined) {
+        if ((ticket !== undefined) 
+          && (place !== undefined) 
+          && (method !== undefined))
+          {
+            if (await ticketServices.select(ticket) !== undefined){
+                let activeRecharge = await rechargeServices.activeRecharge(ticket);
+                if (activeRecharge === undefined)
+                { // quer dizer que não tem nenhuma recarga ativa
+                    //ver se tem recarga esperando
+                    //ativar, ativar ticke
+                    //usar e criar transact
 
-                const ticketStatus = await ticketServices.verifyUsage(ticket);
+                    console.log('entrou em não tem recarga ativa')
 
-                console.log(ticketStatus.credits);
-
-                if (ticketStatus.used_at === null && ticketStatus.credits === 0){
-
-                    console.log('entrou');
-                    // ativar nova recarga
-                    const oldestRecharge = await rechargeServices.findOldestRecharge(ticket);
-
-                    if (oldestRecharge != []){
+                    if (await rechargeServices.findOldestRecharge(ticket) !== undefined) 
+                    {
                         await rechargeServices.changeActiveRecharge(ticket, 'waiting', 'active');
 
                         await ticketServices.changeToActiveRecharge(ticket);
+                        
+                        const transaction = await transactionsServices.createLog(ticket, place, method);
 
-                        ticketStatus = ticketServices.verifyUsage(ticket);
+                        await ticketServices.use(ticket);
 
-                        if (ticketStatus.credits > 0) {
+                        response.status = 'success';
+                        response.message = 'successfuly transaction';
+                        response.payload = transaction;
+                    }
+                    else 
+                    {
+                        response.message = 'no recharges found for this ticket';
+                    }
+                }
+                else
+                { // tem recarga ativa
+                    //qtd de créditos e o tempo e ela expirou
+                    const ticketInfo = await ticketServices.select(ticket);
+    
+                    if (ticketInfo.CREDITS > 0)
+                    {//quer dizer que ele tem um bilhete duplo
+                        console.log('entrou em caso de ticketduplo')
+
+                        const now = new Date();
+                        let used_at_date = new Date(ticketInfo.used_at)
+                        used_at_date += typeTime[activeRecharge.type]
+                        used_at_date = new Date(used_at_date)
+
+                        if (now < used_at_date) { // tempo ainda está valido, n cobrar
+                            const transaction = await transactionsServices.createLog(ticket, place, method);
+                            response.status = 'success';
+                            response.message = 'successful transaction';
+                            response.payload = transaction;
+                        }
+                        else 
+                        {// tempo n válido, debitar credito
+                            const transaction = await transactionsServices.createLog(ticket, place, method);
+
                             await ticketServices.use(ticket);
-                            const transaction = await transactionService.createLog(ticket,place, method);
 
                             response.status = 'success';
                             response.message = 'successful transaction';
                             response.payload = transaction;
                         }
+                    } 
+                    else if (ticketInfo.used_at !== null)
+                    {
+                        const now = new Date();
+                        let used_at_date = new Date(ticketInfo.USED_AT)
+                        used_at_date.setMinutes(used_at_date.getMinutes() + typeTime[activeRecharge.TYPE])
+                        used_at_date = new Date(used_at_date)
 
-                    } else {
-                        response.message = 'ticket does not have a recharge';
-                    }
-                } else {
-                    let created_at_date = new Date(ticketStatus.created_at);
-                    created_at_date + typeTime[ticketStatus.type];
-                    created_at_date += new Date(created_at_date);
-    
-                    let now = new Date();
-    
-                    if (now < created_at_date) {
-                        const transaction = await transactionsServices.createLog(ticket, place, method);
-    
-                        response.status = 'success';
-                        response.message = 'successful transaction';
-                        response.payload = transaction;
-                    } else {
-                        if (ticket.credits === 0){
-                            const oldestRecharge = await rechargeServices.findOldestRecharge(ticket);
+                        if (now < used_at_date)
+                        {//carga ainda válida
+                            const transaction = await transactionsServices.createLog(ticket, place, method);
+                            response.status = 'success';
+                            response.message = 'successful transaction';
+                            response.payload = transaction;
+                        }
+                        else
+                        {//trocar recarga ou retornar erro
+                            console.log('tempo inválido')
 
-                            if (oldestRecharge != []){
+                            console.log(await rechargeServices.findOldestRecharge(ticket))
+
+
+                            if (await rechargeServices.findOldestRecharge(ticket) !== undefined) 
+                            {
                                 await rechargeServices.changeActiveRecharge(ticket, 'active', 'expired');
+
                                 await rechargeServices.changeActiveRecharge(ticket, 'waiting', 'active');
 
                                 await ticketServices.changeToActiveRecharge(ticket);
+                                
+                                const transaction = await transactionsServices.createLog(ticket, place, method);
 
-                                ticketStatus = ticketServices.verifyUsage(ticket);
+                                await ticketServices.use(ticket);
 
-                                if (ticketStatus.credits > 0) {
-                                    await ticketServices.use(ticket);
-                                    const transaction = await transactionService.createLog(ticket,place, method);
-
-                                    response.status = 'success';
-                                    response.message = 'successful transaction';
-                                    response.payload = transaction;
-                                }
-                            } else {
-                                response.message = 'ticket does not have a recharge';
+                                response.status = 'success';
+                                response.message = 'successfuly transaction';
+                                response.payload = transaction;
+                            }
+                            else 
+                            {
+                                response.message = 'no recharges found for this ticket';
                             }
                         }
                     }
                 }
-
-
+            } else {
+                response.message = "ticket not found or invalid";
             }
-            res.send(response);
-        } catch (error) {
-            
         }
+
+        res.send(response);
     },
 }
