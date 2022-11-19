@@ -1,5 +1,5 @@
 const rechargeServices = require('../services/recharges.service');
-const ticketServices = require('../services/tickets.service');
+// const ticketServices = require('../services/tickets.service');
 
 
 module.exports = {
@@ -23,16 +23,12 @@ module.exports = {
 
         const { ticket, type } = req.headers;
 
-        
         try {
-            console.log(ticket, type)
-
             if (ticket !== undefined && type !== undefined) {
                     if (typeCredit[type] !== undefined) {
                         const recharge = await rechargeServices.recharge(ticket, type);
         
-                        if (recharge !== undefined)
-                        {
+                        if (recharge !== undefined){
                             response.status = 'success';
                             response.message = 'successful recharge';
                             response.payload = recharge
@@ -51,7 +47,6 @@ module.exports = {
     },
 
 
-    //revisar
 
     async verifyLastRecharge(ticket_id) {
         const response = {
