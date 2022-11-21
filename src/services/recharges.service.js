@@ -21,11 +21,30 @@ module.exports = {
         return response.rows[0];
     },
 
-    async changeActiveRecharge(ticket_id, oldState, newState){
+    async changeActiveRecharge(ticket_id){
         try {
-            await runQuery("UPDATE recharges SET state = :newState WHERE fk_tickets_ticket_id = :ticket_id AND state = :oldState AND created_at = (SELECT min(created_at) FROM recharges WHERE fk_tickets_ticket_id = :ticket_id AND state = :oldState)", [newState, ticket_id, oldState, ticket_id, oldState]);
-            
+            await runQuery(
+                "UPDATE recharges SET state = 'expired' WHERE fk_tickets_ticket_id = :ticket_id AND state = 'active' AND created_at = (SELECT min(created_at) FROM recharges WHERE fk_tickets_ticket_id = :ticket_id AND state = 'active')",
+                [ticket_id]
+            );
+
+            await runQuery(
+                "UPDATE recharges SET state = 'active' WHERE fk_tickets_ticket_id = :ticket_id AND state = 'waiting' AND created_at = (SELECT min(created_at) FROM recharges WHERE fk_tickets_ticket_id = :ticket_id AND state = 'waiting')",
+                [ticket_id]
+            );
+
             return true;
+        } catch (error) {
+            return error;
+        }
+    },
+
+    async activateRecharge(ticket_id) {
+        try {
+            return await runQuery(
+                "UPDATE recharges SET state = 'active' WHERE fk_tickets_ticket_id = :ticket_id AND state = 'waiting' AND created_at = (SELECT min(created_at) FROM recharges WHERE fk_tickets_ticket_id = :ticket_id AND state = 'waiting')",
+                [ticket_id]
+            )
         } catch (error) {
             return error;
         }

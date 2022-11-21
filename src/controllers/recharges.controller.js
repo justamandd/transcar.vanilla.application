@@ -1,6 +1,29 @@
 const rechargeServices = require('../services/recharges.service');
 // const ticketServices = require('../services/tickets.service');
 
+const getExpirationDate = (type, used_at) => {
+    const typeTime = {
+        "u": 40,
+        "d": 40,
+        "1d": 1440,
+        "3d": 4320,
+        "7d": 10080,
+        "14d": 20160,
+        "30d": 43200
+    }
+
+    const now = new Date();
+    let expirationDate = new Date(used_at);
+    expirationDate.setMinutes(expirationDate.getMinutes() + typeTime[type]);
+    expirationDate = new Date(expirationDate);
+
+    return { now, expirationDate };
+}
+
+const isExpired = (type, used_at) => {
+    const { now, expirationDate } = getExpirationDate(type, used_at);
+    return now < expirationDate ? true : false;
+}
 
 module.exports = {
     async recharge(req, res) {
@@ -66,5 +89,8 @@ module.exports = {
         }
 
         res.send(response);
-    }
+    },
+
+    getExpirationDate,
+    isExpired,
 }
