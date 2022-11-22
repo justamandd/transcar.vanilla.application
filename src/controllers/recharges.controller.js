@@ -69,8 +69,6 @@ module.exports = {
         res.send(response);
     },
 
-
-
     async verifyLastRecharge(ticket_id) {
         const response = {
             status: "error",
@@ -93,4 +91,29 @@ module.exports = {
 
     getExpirationDate,
     isExpired,
+
+    async select(req, res) {
+        const { ticket } = req.headers;
+
+        const response = {
+            status: "error",
+            message: "missing data",
+            payload: undefined
+        }
+        try {
+            const recharges = await rechargeServices.find(ticket);
+    
+            if (recharges !== undefined){
+                response.status = "success";
+                response.message = "successfuly search";
+                response.payload = recharges; 
+            } else {
+                response.message = "invalid ticket";
+            }
+
+            res.send(response);
+        } catch (error) {
+            res.send(error.message);
+        }
+    }
 }
