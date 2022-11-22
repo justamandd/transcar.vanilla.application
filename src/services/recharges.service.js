@@ -28,12 +28,14 @@ module.exports = {
                 [ticket_id]
             );
 
-            await runQuery(
+            const affectedRows = await runQuery(
                 "UPDATE recharges SET state = 'active' WHERE fk_tickets_ticket_id = :ticket_id AND state = 'waiting' AND created_at = (SELECT min(created_at) FROM recharges WHERE fk_tickets_ticket_id = :ticket_id AND state = 'waiting')",
                 [ticket_id]
             );
 
-            return true;
+            const response = await runQuery(`SELECT * FROM recharges WHERE rowid = '${affectedRows.lastRowid}'`, []);
+
+            return response.rows[0];
         } catch (error) {
             return error;
         }
@@ -41,10 +43,14 @@ module.exports = {
 
     async activateRecharge(ticket_id) {
         try {
-            return await runQuery(
+            const affectedRows = await runQuery(
                 "UPDATE recharges SET state = 'active' WHERE fk_tickets_ticket_id = :ticket_id AND state = 'waiting' AND created_at = (SELECT min(created_at) FROM recharges WHERE fk_tickets_ticket_id = :ticket_id AND state = 'waiting')",
                 [ticket_id]
             )
+
+            const response = await runQuery(`SELECT * FROM recharges WHERE rowid = '${affectedRows.lastRowid}'`, []);
+
+            return response.rows[0];
         } catch (error) {
             return error;
         }
