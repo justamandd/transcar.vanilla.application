@@ -5,6 +5,7 @@ const rechargesController = require('../controllers/recharges.controller');
 
 // router.get('/', rechargesController.list);
 router.get('/', rechargesController.select);
+router.get('/expiration', rechargesController.expiration);
 router.post('/', rechargesController.recharge);
 
 module.exports = router;

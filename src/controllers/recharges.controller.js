@@ -1,5 +1,5 @@
 const rechargeServices = require('../services/recharges.service');
-// const ticketServices = require('../services/tickets.service');
+const ticketServices = require('../services/tickets.service');
 
 const getExpirationDate = (type, used_at) => {
     const typeTime = {
@@ -115,5 +115,39 @@ module.exports = {
         } catch (error) {
             res.send(error.message);
         }
+    },
+
+    async expiration(req, res){
+        // const { ticket } = req.headers;
+
+        // const response = {
+        //     status: "error",
+        //     message: "missing data",
+        //     payload: undefined
+        // };
+
+        // try {
+        //     const activeRecharge = rechargeServices.activeRecharge(ticket);
+        //     const ticketDB = ticketCont.select(ticket);
+
+        //     console.log('entrou aq')
+
+        //     const { expirationDate } = getExpirationDate(activeRecharge.FK_TICKETS_TICKET_ID, ticketDB.USED_AT);
+
+        //     if (activeRecharge !== undefined){
+        //         response.status = "success";
+        //         response.message = "successfuly search";
+        //         response.payload = {
+        //             expiration_date: expirationDate,
+        //             is_expired: !isExpired(activeRecharge.FK_TICKETS_TICKET_ID, ticketDB.USED_AT)
+        //         }
+        //     } else {
+        //         response.message = "invalid ticket"
+        //     }
+
+        //     res.send(response);
+        // } catch (error) {
+        //     res.send(error);
+        // }
     }
 }
