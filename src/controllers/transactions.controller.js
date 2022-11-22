@@ -26,11 +26,11 @@ module.exports = {
 
                     if (await rechargeServices.findOldestRecharge(ticket) !== undefined) 
                     {
-                        await rechargeServices.activateRecharge(ticket);
+                        const currentRecharge = await rechargeServices.activateRecharge(ticket);
 
                         await ticketServices.changeToActiveRecharge(ticket);
                         
-                        const transaction = await transactionsServices.createLog(ticket, place, method);
+                        const transaction = await transactionsServices.createLog(ticket, place, method, currentRecharge.RECHARGE_ID);
 
                         await ticketServices.use(ticket);
 
@@ -50,14 +50,14 @@ module.exports = {
                     {
                         if (rechargesController.isExpired(activeRecharge.TYPE, ticketInfo.USED_AT))
                         {   //ticket tem registro de uso porém ainda está dentro do tempo
-                            const transaction = await transactionsServices.createLog(ticket, place, method);
+                            const transaction = await transactionsServices.createLog(ticket, place, method, activeRecharge.RECHARGE_ID);
                             response.status = 'success';
                             response.message = 'successful transaction';
                             response.payload = transaction;
                         } 
                         else if (ticketInfo.CREDITS > 0) 
                         {//quer dizer que ele tem um bilhete duplo
-                            const transaction = await transactionsServices.createLog(ticket, place, method);
+                            const transaction = await transactionsServices.createLog(ticket, place, method, activeRecharge.RECHARGE_ID);
 
                             await ticketServices.use(ticket);
 
@@ -69,11 +69,13 @@ module.exports = {
                         {   //ticket não está dentro do tempo, tentar trocar recarga ou retornar erro
                             if (await rechargeServices.findOldestRecharge(ticket) !== undefined) 
                             {
-                                if (await rechargeServices.changeActiveRecharge(ticket))
+                                const currentRecharge = await rechargeServices.changeActiveRecharge(ticket);
+
+                                if (currentRecharge !== undefined)
                                 {   
                                     await ticketServices.changeToActiveRecharge(ticket);
                                     
-                                    const transaction = await transactionsServices.createLog(ticket, place, method);
+                                    const transaction = await transactionsServices.createLog(ticket, place, method, currentRecharge.RECHARGE_ID);
     
                                     await ticketServices.use(ticket);
     
