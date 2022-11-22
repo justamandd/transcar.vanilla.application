@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(routes);
 
 app.get('/', async (req, res) => {
-    res.send('Você está acessando a API!');
+    res.send('Você está acessando a API da TRANSCAR!');
 })
 
 app.listen(port, () => console.log('App running on port http://localhost:' + port));
