@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const ticketsRouter = require('./tickets.routes');
-const rechargesRouter = require('./recharges.routes');
-const transactionsRouter = require('./transactions.routes');
+const ticketsRouter = require('@routes/tickets.routes');
+const rechargesRouter = require('@routes/recharges.routes');
+const transactionsRouter = require('@routes/transactions.routes');
 
 router.use('/tickets', ticketsRouter);
 router.use('/recharges', rechargesRouter);

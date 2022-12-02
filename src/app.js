@@ -1,10 +1,13 @@
-require('../db.connection');
+require('dotenv').config();
+require('module-alias/register');
+
+const config = require('@config');
+
 const cors = require('cors');
 const express = require('express');
 const app = express();
-const port = 8080;
 
-const routes = require('./routes/index');
+const routes = require('@routes');
 
 app.use(cors()); 
 app.use(express.json());
@@ -14,4 +17,4 @@ app.get('/', async (req, res) => {
     res.send('Você está acessando a API da TRANSCAR!');
 })
 
-app.listen(port, () => console.log('App running on port http://localhost:' + port));
+app.listen(config.app.port, () => console.log('App running on port http://localhost:' + config.app.port));

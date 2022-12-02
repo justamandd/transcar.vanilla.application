@@ -1,4 +1,4 @@
-const rechargeServices = require('../services/recharges.service');
+const rechargeServices = require('@services/recharges.service');
 // const ticketServices = require('../services/tickets.service');
 
 const getExpirationDate = (type, used_at) => {
@@ -12,6 +12,8 @@ const getExpirationDate = (type, used_at) => {
         "30d": 43200
     }
 
+    //verificar tipo
+
     const now = new Date();
     let expirationDate = new Date(used_at);
     expirationDate.setMinutes(expirationDate.getMinutes() + typeTime[type]);
@@ -20,7 +22,7 @@ const getExpirationDate = (type, used_at) => {
     return { now, expirationDate };
 }
 
-const isExpired = (type, used_at) => {
+const isValid = (type, used_at) => {
     const { now, expirationDate } = getExpirationDate(type, used_at);
     return now < expirationDate ? true : false;
 }
@@ -90,7 +92,7 @@ module.exports = {
     },
 
     getExpirationDate,
-    isExpired,
+    isValid,
 
     async select(req, res) {
         const { ticket } = req.headers;
@@ -114,6 +116,54 @@ module.exports = {
             res.send(response);
         } catch (error) {
             res.send(error.message);
+        }
+    },
+
+    async listUsage(req, res) {
+        const { ticket } = req.headers;
+
+        const response = {
+            status: "error",
+            message: "missing data",
+            payload: undefined
+        }
+
+
+        if (ticket) {
+            const usage = await rechargeServices.listUsage(ticket);
+
+            payload = []
+
+            if (usage) {
+                usage.forEach(log => {
+                    if (!payload.find(el => el.RECHARGE_ID == log.RECHARGE_ID)){
+                        payload.push({
+                            RECHARGE_ID: log.RECHARGE_ID,
+                            TYPE: log.TYPE,
+                            STATE: log.STATE,
+                            TRANSACTIONS: [{
+                                TRANSACTION_ID: log.TRANSACTION_ID,
+                                PLACE: log.PLACE,
+                                METHOD: log.METHOD,
+                                CREATED_AT: log.CREATED_AT
+                            }]
+                        })
+                    } else {
+                        payload.find(el => el.RECHARGE_ID == log.RECHARGE_ID).TRANSACTIONS.push({
+                            TRANSACTION_ID: log.TRANSACTION_ID,
+                            PLACE: log.PLACE,
+                            METHOD: log.METHOD,
+                            CREATED_AT: log.CREATED_AT
+                        })
+                    }
+                });
+    
+                response.status = 'success'
+                response.message = 'successfully search'
+                response.payload = payload;
+            }
+            
+            res.send(response)
         }
     }
 }

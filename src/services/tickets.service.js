@@ -1,5 +1,6 @@
-require('../../db.connection');
-const rechargesController = require ('../controllers/recharges.controller');
+require('@db');
+
+const rechargesController = require('@controllers/recharges.controller');
 
 module.exports = {
     //retorna o registro codigo criado
@@ -14,9 +15,13 @@ module.exports = {
     async select(code){
         const res = await runQuery('SELECT * FROM tickets WHERE ticket_id = :ticket_id', [code]);
 
+        if (!res.rows[0])
+        {
+            return false;
+        }
+
         return res.rows[0];
     },
-
 
     //retorna informoções importantes para verificar se está ativo, qnts creditos e o tempo para testar
     async verifyUsage(ticket_id){
@@ -45,5 +50,9 @@ module.exports = {
 
     async use(ticket_id){
         await runQuery("UPDATE tickets SET used_at = localtimestamp, credits = credits-1 WHERE ticket_id = :ticket_id", [ticket_id]);
+    },
+
+    async validate(ticket, typeActiveRecharge) {
+        rechargesController.getExpirationDate
     }
 }

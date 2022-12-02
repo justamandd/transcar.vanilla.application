@@ -1,10 +1,10 @@
-const transactionsServices = require('../services/transactions.service');
-const rechargeServices = require('../services/recharges.service');
-const ticketServices = require('../services/tickets.service');
-const rechargesController = require('./recharges.controller');
+const transactionsServices = require('@services/transactions.service');
+const rechargeServices = require('@services/recharges.service');
+const ticketServices = require('@services/tickets.service');
+const rechargesController = require('@controllers/recharges.controller');
 
 module.exports = {
-    async doTransaction(req, res) {
+    async transaction(req, res) {
         const ticket = req.headers.ticket;
         const { place, method } = req.body;
 
@@ -14,17 +14,15 @@ module.exports = {
             payload: undefined
         }
 
-        if ((ticket !== undefined) 
-          && (place !== undefined) 
-          && (method !== undefined))
+        if ((ticket) && (place) && (method))
           {
-            if (await ticketServices.select(ticket) !== undefined){
+            if (await ticketServices.select(ticket)){
                 const activeRecharge = await rechargeServices.activeRecharge(ticket);
 
-                if (activeRecharge === undefined)
+                if (!activeRecharge)
                 {   // Não possuí recarga ativa, procurar recarga em espera, ativar e criar log no ticket, ou retornar erro 
 
-                    if (await rechargeServices.findOldestRecharge(ticket) !== undefined) 
+                    if (await rechargeServices.findOldestRecharge(ticket)) 
                     {
                         const currentRecharge = await rechargeServices.activateRecharge(ticket);
 
@@ -32,7 +30,7 @@ module.exports = {
                         
                         const transaction = await transactionsServices.createLog(ticket, place, method, currentRecharge.RECHARGE_ID);
 
-                        await ticketServices.use(ticket);
+                        ticketServices.use(ticket);
 
                         response.status = 'success';
                         response.message = 'successfuly transaction';
@@ -46,9 +44,9 @@ module.exports = {
                     //qtd de créditos e o tempo e ela expirou
                     const ticketInfo = await ticketServices.select(ticket);
     
-                    if (ticketInfo.used_at !== null)
+                    if (ticketInfo.USED_AT)
                     {
-                        if (rechargesController.isExpired(activeRecharge.TYPE, ticketInfo.USED_AT))
+                        if (rechargesController.isValid(activeRecharge.TYPE, ticketInfo.USED_AT))
                         {   //ticket tem registro de uso porém ainda está dentro do tempo
                             const transaction = await transactionsServices.createLog(ticket, place, method, activeRecharge.RECHARGE_ID);
                             response.status = 'success';
@@ -59,7 +57,7 @@ module.exports = {
                         {//quer dizer que ele tem um bilhete duplo
                             const transaction = await transactionsServices.createLog(ticket, place, method, activeRecharge.RECHARGE_ID);
 
-                            await ticketServices.use(ticket);
+                            ticketServices.use(ticket);
 
                             response.status = 'success';
                             response.message = 'successful transaction';
@@ -67,24 +65,24 @@ module.exports = {
                         } 
                         else 
                         {   //ticket não está dentro do tempo, tentar trocar recarga ou retornar erro
-                            if (await rechargeServices.findOldestRecharge(ticket) !== undefined) 
+                            if (await rechargeServices.findOldestRecharge(ticket)) 
                             {
                                 const currentRecharge = await rechargeServices.changeActiveRecharge(ticket);
 
-                                if (currentRecharge !== undefined)
+                                if (currentRecharge)
                                 {   
                                     await ticketServices.changeToActiveRecharge(ticket);
                                     
                                     const transaction = await transactionsServices.createLog(ticket, place, method, currentRecharge.RECHARGE_ID);
     
-                                    await ticketServices.use(ticket);
+                                    ticketServices.use(ticket);
     
                                     response.status = 'success';
                                     response.message = 'successfuly transaction';
                                     response.payload = transaction;
                                 }
                             } else {
-                                response.message = 'no recharges found for this ticket';
+                                response.message = 'your ticket is expired and no recharges found for this ticket';
                             }
                         }
                     }

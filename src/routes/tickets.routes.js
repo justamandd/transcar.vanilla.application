@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const ticketsController = require('../controllers/tickets.controllers');
+const ticketsController = require('@controllers/tickets.controllers');
 
-// router.get('/', ticketsController.list);
-router.get('/', ticketsController.select);
+router.get('/info', ticketsController.info); //esse devolve os dados para verificação
 router.post('/create', ticketsController.createCode);
-// router.delete('/delete', ticketsController.delete);
 
 module.exports = router;
