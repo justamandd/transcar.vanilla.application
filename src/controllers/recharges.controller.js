@@ -141,14 +141,11 @@ module.exports = {
                             RECHARGE_ID: log.RECHARGE_ID,
                             TYPE: log.TYPE,
                             STATE: log.STATE,
-                            TRANSACTIONS: [{
-                                TRANSACTION_ID: log.TRANSACTION_ID,
-                                PLACE: log.PLACE,
-                                METHOD: log.METHOD,
-                                CREATED_AT: log.CREATED_AT
-                            }]
+                            TRANSACTIONS: []
                         })
-                    } else {
+                    }
+
+                    if (log.TRANSACTION_ID) {
                         payload.find(el => el.RECHARGE_ID == log.RECHARGE_ID).TRANSACTIONS.push({
                             TRANSACTION_ID: log.TRANSACTION_ID,
                             PLACE: log.PLACE,
@@ -161,6 +158,8 @@ module.exports = {
                 response.status = 'success'
                 response.message = 'successfully search'
                 response.payload = payload;
+            } else {
+                response.message = 'invalid ticket or no recharges found'
             }
             
             res.send(response)
