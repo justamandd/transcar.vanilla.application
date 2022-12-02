@@ -76,7 +76,7 @@ module.exports = {
 
     async listUsage(ticket) {
         try {
-            const res = await runQuery("SELECT * FROM recharges JOIN transactions ON recharge_id = fk_recharges_recharge_id where recharges.fk_tickets_ticket_id = :code", [ticket])
+            const res = await runQuery("SELECT  r.recharge_id, r.type, r.state,t.transaction_id, t.place, t.method, t.created_at FROM recharges r JOIN transactions t ON recharge_id = fk_recharges_recharge_id where r.fk_tickets_ticket_id = :code ORDER BY r.recharge_id DESC;", [ticket])
 
             return res.rows;
         } catch (error) {
