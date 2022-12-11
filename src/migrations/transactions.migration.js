@@ -2,14 +2,14 @@ require('@db');
 
 try {
     runQuery(`
-    CREATE SEQUENCE transaction_id MINVALUE 1 START WITH 1 CACHE 10;
+    CREATE SEQUENCE transaction_id MINVALUE 1 START WITH 1;
 
     CREATE TABLE transactions (
         transaction_id INT DEFAULT transaction_id.NEXTVAL PRIMARY KEY,
         place VARCHAR2(50),
         method VARCHAR2(15) NOT NULL,
         created_at TIMESTAMP DEFAULT localtimestamp,
-        fk_tickets_ticket_id CHAR(36),
+        fk_tickets_ticket_id CHAR(12),
         fk_recharges_recharge_id INT
     );
     
