@@ -44,46 +44,43 @@ module.exports = {
                     //qtd de créditos e o tempo e ela expirou
                     const ticketInfo = await ticketServices.select(ticket);
     
-                    if (ticketInfo.USED_AT)
-                    {
-                        if (rechargesController.isValid(activeRecharge.TYPE, ticketInfo.USED_AT))
-                        {   //ticket tem registro de uso porém ainda está dentro do tempo
-                            const transaction = await transactionsServices.createLog(ticket, place, method, activeRecharge.RECHARGE_ID);
-                            response.status = 'success';
-                            response.message = 'successful transaction';
-                            response.payload = transaction;
-                        } 
-                        else if (ticketInfo.CREDITS > 0) 
-                        {//quer dizer que ele tem um bilhete duplo
-                            const transaction = await transactionsServices.createLog(ticket, place, method, activeRecharge.RECHARGE_ID);
+                    if (rechargesController.isValid(activeRecharge.TYPE, ticketInfo.USED_AT))
+                    {   //ticket tem registro de uso porém ainda está dentro do tempo
+                        const transaction = await transactionsServices.createLog(ticket, place, method, activeRecharge.RECHARGE_ID);
+                        response.status = 'success';
+                        response.message = 'successful transaction';
+                        response.payload = transaction;
+                    } 
+                    else if (ticketInfo.CREDITS > 0) 
+                    {//quer dizer que ele tem um bilhete duplo
+                        const transaction = await transactionsServices.createLog(ticket, place, method, activeRecharge.RECHARGE_ID);
 
-                            ticketServices.use(ticket);
+                        ticketServices.use(ticket);
 
-                            response.status = 'success';
-                            response.message = 'successful transaction';
-                            response.payload = transaction;
-                        } 
-                        else 
-                        {   //ticket não está dentro do tempo, tentar trocar recarga ou retornar erro
-                            if (await rechargeServices.findOldestRecharge(ticket)) 
-                            {
-                                const currentRecharge = await rechargeServices.changeActiveRecharge(ticket);
+                        response.status = 'success';
+                        response.message = 'successful transaction';
+                        response.payload = transaction;
+                    } 
+                    else 
+                    {   //ticket não está dentro do tempo, tentar trocar recarga ou retornar erro
+                        if (await rechargeServices.findOldestRecharge(ticket)) 
+                        {
+                            const currentRecharge = await rechargeServices.changeActiveRecharge(ticket);
 
-                                if (currentRecharge)
-                                {   
-                                    await ticketServices.changeToActiveRecharge(ticket);
-                                    
-                                    const transaction = await transactionsServices.createLog(ticket, place, method, currentRecharge.RECHARGE_ID);
-    
-                                    ticketServices.use(ticket);
-    
-                                    response.status = 'success';
-                                    response.message = 'successfuly transaction';
-                                    response.payload = transaction;
-                                }
-                            } else {
-                                response.message = 'your ticket is expired and no recharges found for this ticket';
+                            if (currentRecharge)
+                            {   
+                                await ticketServices.changeToActiveRecharge(ticket);
+                                
+                                const transaction = await transactionsServices.createLog(ticket, place, method, currentRecharge.RECHARGE_ID);
+
+                                ticketServices.use(ticket);
+
+                                response.status = 'success';
+                                response.message = 'successfuly transaction';
+                                response.payload = transaction;
                             }
+                        } else {
+                            response.message = 'your ticket is expired and no recharges found for this ticket';
                         }
                     }
                 }

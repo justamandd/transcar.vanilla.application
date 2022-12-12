@@ -141,6 +141,7 @@ module.exports = {
                             RECHARGE_ID: log.RECHARGE_ID,
                             TYPE: log.TYPE,
                             STATE: log.STATE,
+                            CREATED_AT: log.CREATED_AT,
                             TRANSACTIONS: []
                         })
                     }
@@ -154,7 +155,7 @@ module.exports = {
                         })
                     }
                 });
-    
+
                 response.status = 'success'
                 response.message = 'successfully search'
                 response.payload = payload;

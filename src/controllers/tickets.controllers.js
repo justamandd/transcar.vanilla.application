@@ -27,36 +27,6 @@ module.exports = {
         res.send(response);
     },
 
-    async use(ticket_id){
-        
-    },
-
-    async select(req, res){
-        const { ticket } = req.headers;
-
-        const response = {
-            status: "error",
-            message: "missing data",
-            payload: undefined
-        };
-
-        try {
-            const ticketResponse = await ticketServices.select(ticket);
-
-            if (ticketResponse !== undefined) {
-                response.status = "success";
-                response.message = "successfuly search";
-                response.payload = ticketResponse;
-            } else {
-                response.message = "invalid ticket";
-            }
-
-            res.send(response);
-        } catch (error) {
-            res.send(error);
-        }
-    },
-
     async info(req, res) {
         const { ticket } = req.headers;
 
