@@ -71,53 +71,8 @@ module.exports = {
         res.send(response);
     },
 
-    async verifyLastRecharge(ticket_id) {
-        const response = {
-            status: "error",
-            message: "missing data",
-            payload: undefined
-        }
-
-        try {
-            const recharges = await rechargeServices.findOldestRecharge(ticket_id);
-
-            response.status = "success";
-            response.message = "succefull select";
-            response.payload = recharges;
-        } catch (error) {
-            response.message = error.message;
-        }
-
-        res.send(response);
-    },
-
     getExpirationDate,
     isValid,
-
-    async select(req, res) {
-        const { ticket } = req.headers;
-
-        const response = {
-            status: "error",
-            message: "missing data",
-            payload: undefined
-        }
-        try {
-            const recharges = await rechargeServices.find(ticket);
-    
-            if (recharges !== undefined){
-                response.status = "success";
-                response.message = "successfuly search";
-                response.payload = recharges; 
-            } else {
-                response.message = "invalid ticket";
-            }
-
-            res.send(response);
-        } catch (error) {
-            res.send(error.message);
-        }
-    },
 
     async listUsage(req, res) {
         const { ticket } = req.headers;
